@@ -463,19 +463,19 @@
             <input type="text" id="f-term" required>
           </div>
           <div class="field">
-            <label for="f-official">正式名称(英語)</label>
-            <input type="text" id="f-official">
+            <label for="f-meaningja">意味(日本語) * (クイズの選択肢に表示されます)</label>
+            <input type="text" id="f-meaningja" required>
           </div>
           <div class="field">
-            <label for="f-formula">計算式</label>
-            <input type="text" id="f-formula">
+            <label for="f-english">何の略称か(英語・任意)</label>
+            <input type="text" id="f-english">
           </div>
           <div class="field">
-            <label for="f-meaning">意味(初心者向けの要旨) *</label>
-            <textarea id="f-meaning" rows="4" required></textarea>
+            <label for="f-explanation">解説(計算式を含む) *</label>
+            <textarea id="f-explanation" rows="5" required></textarea>
           </div>
           <div class="field">
-            <label for="f-mgmt">経営側の立場からの捉え方(任意)</label>
+            <label for="f-mgmt">経営側の視点(任意)</label>
             <textarea id="f-mgmt" rows="3"></textarea>
           </div>
           <div id="form-error" class="login-error"></div>
@@ -517,80 +517,80 @@
   var db = getFirestore(app);
 
   var DEFAULT_TERMS = [
-    {category:"収益性・資本効率指標", term:"ROE", officialName:"Return On Equity(自己資本利益率)", formula:"当期純利益 ÷ 自己資本 × 100(%)",
-      meaning:"株主が出したお金(自己資本)を使って、会社がどれだけ効率的に利益を生み出したかを示す指標。数値が高いほど株主のお金を上手に増やせている。",
+    {category:"収益性・資本効率指標", term:"ROE", meaningJa:"自己資本利益率", englishName:"Return On Equity",
+      explanation:"計算式: 当期純利益 ÷ 自己資本 × 100(%)\n株主が出したお金(自己資本)を使って、会社がどれだけ効率的に利益を生み出したかを示す指標。数値が高いほど株主のお金を上手に増やせている。",
       managementView:"株主還元・資本効率を代表する指標で、投資家が最も重視する数値の一つ。利益率・資産回転率・財務レバレッジの3要素に分解できる(デュポン分析)。借入を増やすと見かけ上ROEは上がるが、財務リスクとのバランスが問われる。"},
-    {category:"収益性・資本効率指標", term:"ROA", officialName:"Return On Assets(総資産利益率)", formula:"当期純利益 ÷ 総資産 × 100(%)",
-      meaning:"会社が持つ全ての資産(借入金も含めた元手全体)を使って、どれだけ利益を生み出したかを示す指標。負債の影響を受けにくい。",
+    {category:"収益性・資本効率指標", term:"ROA", meaningJa:"総資産利益率", englishName:"Return On Assets",
+      explanation:"計算式: 当期純利益 ÷ 総資産 × 100(%)\n会社が持つ全ての資産(借入金も含めた元手全体)を使って、どれだけ利益を生み出したかを示す指標。負債の影響を受けにくい。",
       managementView:"事業そのものの効率性を測る指標。ROEが高くてもROAが低い場合、借入(レバレッジ)で見かけ上のROEを底上げしている可能性があり、事業の実力を見るには両方を確認する必要がある。"},
-    {category:"収益性・資本効率指標", term:"ROIC", officialName:"Return On Invested Capital(投下資本利益率)", formula:"NOPAT(税引後営業利益) ÷ 投下資本(有利子負債+自己資本) × 100(%)",
-      meaning:"事業に投じた資金(借入と株主資本の合計)全体に対して、本業でどれだけ効率的に利益を生み出したかを示す指標。",
+    {category:"収益性・資本効率指標", term:"ROIC", meaningJa:"投下資本利益率", englishName:"Return On Invested Capital",
+      explanation:"計算式: NOPAT(税引後営業利益) ÷ 投下資本(有利子負債+自己資本) × 100(%)\n事業に投じた資金(借入と株主資本の合計)全体に対して、本業でどれだけ効率的に利益を生み出したかを示す指標。",
       managementView:"WACC(資本コスト)と比較することで価値創造の有無を判断する経営上最重要の指標の一つ。ROIC>WACCなら企業価値創造、ROIC<WACCなら価値破壊とされ、事業ポートフォリオの取捨選択にも用いられる。"},
-    {category:"収益性・資本効率指標", term:"ROI", officialName:"Return On Investment(投資収益率)", formula:"投資から得られた利益 ÷ 投資額 × 100(%)",
-      meaning:"ある特定の投資(設備投資、広告費、M&Aなど)に対してどれだけのリターンが得られたかを測る指標。個別プロジェクトの費用対効果を測る。",
+    {category:"収益性・資本効率指標", term:"ROI", meaningJa:"投資収益率", englishName:"Return On Investment",
+      explanation:"計算式: 投資から得られた利益 ÷ 投資額 × 100(%)\nある特定の投資(設備投資、広告費、M&Aなど)に対してどれだけのリターンが得られたかを測る指標。個別プロジェクトの費用対効果を測る。",
       managementView:"全社的なROEと異なり、個別の投資案件・施策の意思決定や優先順位付けに使う実務的な指標。事業部やプロジェクト単位の予算配分の判断材料になる。"},
-    {category:"収益性・資本効率指標", term:"ROS(売上高営業利益率)", officialName:"Return On Sales / Operating Margin", formula:"営業利益 ÷ 売上高 × 100(%)",
-      meaning:"売上のうち、本業でどれだけ利益として残せているかを示す、最も基本的な収益性指標。",
+    {category:"収益性・資本効率指標", term:"ROS", meaningJa:"売上高営業利益率", englishName:"Return On Sales / Operating Margin",
+      explanation:"計算式: 営業利益 ÷ 売上高 × 100(%)\n売上のうち、本業でどれだけ利益として残せているかを示す、最も基本的な収益性指標。",
       managementView:"コスト構造・価格競争力・事業効率を評価する基本指標。業界内比較やセグメント別・事業別の収益性分析に日常的に用いられる。"},
 
-    {category:"株価バリュエーション指標", term:"PER", officialName:"Price Earnings Ratio(株価収益率)", formula:"株価 ÷ 一株当たり利益(EPS)",
-      meaning:"株価が利益の何年分で取引されているかを示す指標。将来の成長期待が高い会社ほどPERは高くなりやすい。",
+    {category:"株価バリュエーション指標", term:"PER", meaningJa:"株価収益率", englishName:"Price Earnings Ratio",
+      explanation:"計算式: 株価 ÷ 一株当たり利益(EPS)\n株価が利益の何年分で取引されているかを示す指標。将来の成長期待が高い会社ほどPERは高くなりやすい。",
       managementView:"市場からの成長期待・評価を反映する指標。PERが高い企業は増資や株式を対価とするM&Aがしやすくなるため、IRを通じて適正な評価を得ることが経営課題となる。"},
-    {category:"株価バリュエーション指標", term:"PBR", officialName:"Price Book-value Ratio(株価純資産倍率)", formula:"株価 ÷ 一株当たり純資産(BPS)",
-      meaning:"株価が会社の解散価値(純資産)の何倍で取引されているかを示す指標。PBR1倍は株価と純資産が同水準であることを意味する。",
+    {category:"株価バリュエーション指標", term:"PBR", meaningJa:"株価純資産倍率", englishName:"Price Book-value Ratio",
+      explanation:"計算式: 株価 ÷ 一株当たり純資産(BPS)\n株価が会社の解散価値(純資産)の何倍で取引されているかを示す指標。PBR1倍は株価と純資産が同水準であることを意味する。",
       managementView:"PBRが1倍割れの状態は、市場が「資産を事業に使うより解散・分配した方が価値がある」と評価していることを意味し、東証も改善を要請している。ROE向上や自社株買いなど資本政策の効果を測る指標として経営者が重視する。"},
-    {category:"株価バリュエーション指標", term:"EV", officialName:"Enterprise Value(企業価値)", formula:"時価総額 + 有利子負債 − 現金及び現金同等物",
-      meaning:"株主だけでなく債権者も含めた会社全体の価値。M&Aで会社を買収する際に実質的に必要となる金額に近い。",
+    {category:"株価バリュエーション指標", term:"EV", meaningJa:"企業価値", englishName:"Enterprise Value",
+      explanation:"計算式: 時価総額 + 有利子負債 − 現金及び現金同等物\n株主だけでなく債権者も含めた会社全体の価値。M&Aで会社を買収する際に実質的に必要となる金額に近い。",
       managementView:"買収防衛やM&A戦略において自社の適正価値を把握するために重要。時価総額だけでなく負債・手元資金の状況も踏まえた評価が必要になる。"},
-    {category:"株価バリュエーション指標", term:"EV/EBITDA倍率", officialName:"EV/EBITDA Ratio", formula:"EV(企業価値) ÷ EBITDA",
-      meaning:"会社の実質的な稼ぐ力(EBITDA)に対して、企業価値が何倍で評価されているかを示す指標。PERと似ているが資本構成の影響を受けにくい。",
+    {category:"株価バリュエーション指標", term:"EV/EBITDA", meaningJa:"EV/EBITDA倍率", englishName:"EV/EBITDA Ratio",
+      explanation:"計算式: EV(企業価値) ÷ EBITDA\n会社の実質的な稼ぐ力(EBITDA)に対して、企業価値が何倍で評価されているかを示す指標。PERと似ているが資本構成の影響を受けにくい。",
       managementView:"M&Aの妥当性評価や同業他社比較で頻繁に使われる。業界平均より倍率が低い場合、買収されるリスクや株価の割安感を示唆する。"},
 
-    {category:"1株当たり指標", term:"EPS", officialName:"Earnings Per Share(一株当たり利益)", formula:"当期純利益 ÷ 発行済株式数",
-      meaning:"株式1株あたりにどれだけの利益が生まれたかを示す指標。",
+    {category:"1株当たり指標", term:"EPS", meaningJa:"一株当たり利益", englishName:"Earnings Per Share",
+      explanation:"計算式: 当期純利益 ÷ 発行済株式数\n株式1株あたりにどれだけの利益が生まれたかを示す指標。",
       managementView:"自社株買いで発行株式数を減らすとEPSが向上するため、代表的な株主還元策として使われる。役員報酬やストックオプションの評価指標としても用いられる。"},
-    {category:"1株当たり指標", term:"BPS", officialName:"Book-value Per Share(一株当たり純資産)", formula:"純資産 ÷ 発行済株式数",
-      meaning:"株式1株あたりの会社の純資産(解散価値)を示す指標。",
+    {category:"1株当たり指標", term:"BPS", meaningJa:"一株当たり純資産", englishName:"Book-value Per Share",
+      explanation:"計算式: 純資産 ÷ 発行済株式数\n株式1株あたりの会社の純資産(解散価値)を示す指標。",
       managementView:"PBR算出の基礎となる。BPSの着実な増加は内部留保の蓄積を意味するが、それだけでは株主価値向上とは限らず、資本の使い道(投資・還元)とのバランスが問われる。"},
 
-    {category:"キャッシュフロー・資本コスト指標", term:"EBITDA", officialName:"Earnings Before Interest, Taxes, Depreciation and Amortization", formula:"営業利益 + 減価償却費(+のれん償却費)",
-      meaning:"金利・税金・減価償却費などを考慮する前の利益で、会社が生み出す現金創出力に近い指標。国や会計方針の違いの影響を受けにくい。",
+    {category:"キャッシュフロー・資本コスト指標", term:"EBITDA", meaningJa:"利払い前・税引き前・減価償却前利益", englishName:"Earnings Before Interest, Taxes, Depreciation and Amortization",
+      explanation:"計算式: 営業利益 + 減価償却費(+のれん償却費)\n金利・税金・減価償却費などを考慮する前の利益で、会社が生み出す現金創出力に近い指標。国や会計方針の違いの影響を受けにくい。",
       managementView:"設備投資が重い企業(通信・インフラなど)の実質的な収益力を測るのに有効。M&A時の企業価値評価(EV/EBITDA倍率)の基礎としても使われる。"},
-    {category:"キャッシュフロー・資本コスト指標", term:"NOPAT", officialName:"Net Operating Profit After Tax(税引後営業利益)", formula:"営業利益 ×(1 − 実効税率)",
-      meaning:"本業が生み出す利益から税金の影響を除いた、事業そのものの実力を示す利益。",
+    {category:"キャッシュフロー・資本コスト指標", term:"NOPAT", meaningJa:"税引後営業利益", englishName:"Net Operating Profit After Tax",
+      explanation:"計算式: 営業利益 ×(1 − 実効税率)\n本業が生み出す利益から税金の影響を除いた、事業そのものの実力を示す利益。",
       managementView:"ROIC算出の分子として使われ、資金調達方法(借入か自己資本か)に左右されない事業収益力を評価する際の土台となる。"},
-    {category:"キャッシュフロー・資本コスト指標", term:"FCF", officialName:"Free Cash Flow(フリーキャッシュフロー)", formula:"営業活動によるキャッシュフロー − 投資活動によるキャッシュフロー",
-      meaning:"本業で稼いだ現金から、事業継続に必要な投資を差し引いて、自由に使えるお金がどれだけ残ったかを示す指標。",
+    {category:"キャッシュフロー・資本コスト指標", term:"FCF", meaningJa:"フリーキャッシュフロー", englishName:"Free Cash Flow",
+      explanation:"計算式: 営業活動によるキャッシュフロー − 投資活動によるキャッシュフロー\n本業で稼いだ現金から、事業継続に必要な投資を差し引いて、自由に使えるお金がどれだけ残ったかを示す指標。",
       managementView:"配当・自社株買い・借入返済・M&Aなど経営判断の原資となる最重要キャッシュ指標。利益が黒字でもFCFがマイナス(黒字倒産のリスク)ということもあり、利益と併せて必ず確認される。"},
-    {category:"キャッシュフロー・資本コスト指標", term:"WACC", officialName:"Weighted Average Cost of Capital(加重平均資本コスト)", formula:"株主資本コスト×(自己資本/総資本) + 負債コスト×(1−実効税率)×(負債/総資本)",
-      meaning:"会社が事業資金を調達する際にかかる、株主と債権者への平均的なコスト(要求リターン)。",
+    {category:"キャッシュフロー・資本コスト指標", term:"WACC", meaningJa:"加重平均資本コスト", englishName:"Weighted Average Cost of Capital",
+      explanation:"計算式: 株主資本コスト×(自己資本/総資本) + 負債コスト×(1−実効税率)×(負債/総資本)\n会社が事業資金を調達する際にかかる、株主と債権者への平均的なコスト(要求リターン)。",
       managementView:"投資の可否を判断する基準線(ハードルレート)。ROICやIRRがWACCを上回るかどうかで、その投資が企業価値を創造するかを判断する経営意思決定の根幹となる。"},
 
-    {category:"財務健全性指標", term:"自己資本比率", officialName:"Equity Ratio", formula:"自己資本 ÷ 総資産 × 100(%)",
-      meaning:"会社の全財産のうち、返済不要の自己資本がどれだけの割合を占めるかを示す、財務の安全性を測る代表的指標。",
+    {category:"財務健全性指標", term:"Equity Ratio", meaningJa:"自己資本比率", englishName:"",
+      explanation:"計算式: 自己資本 ÷ 総資産 × 100(%)\n会社の全財産のうち、返済不要の自己資本がどれだけの割合を占めるかを示す、財務の安全性を測る代表的指標。",
       managementView:"高すぎると資本効率(ROE)を下げる可能性があり、低すぎると財務リスク(倒産リスク)が高まる。業種特性や成長ステージに応じた最適水準を経営判断で見極める必要がある。"},
-    {category:"財務健全性指標", term:"流動比率", officialName:"Current Ratio", formula:"流動資産 ÷ 流動負債 × 100(%)",
-      meaning:"短期的な支払い能力(1年以内に返済すべき負債に対する、現金化しやすい資産の割合)を示す指標。",
+    {category:"財務健全性指標", term:"Current Ratio", meaningJa:"流動比率", englishName:"",
+      explanation:"計算式: 流動資産 ÷ 流動負債 × 100(%)\n短期的な支払い能力(1年以内に返済すべき負債に対する、現金化しやすい資産の割合)を示す指標。",
       managementView:"短期の資金繰りリスクを判断する材料。一般的に200%以上が安全とされるが、業種により適正水準は異なるため業界平均との比較が重要。"},
 
-    {category:"株主還元指標", term:"配当性向", officialName:"Payout Ratio", formula:"配当金総額 ÷ 当期純利益 × 100(%)",
-      meaning:"稼いだ利益のうち、どれだけを株主に配当として還元しているかを示す指標。",
+    {category:"株主還元指標", term:"Payout Ratio", meaningJa:"配当性向", englishName:"",
+      explanation:"計算式: 配当金総額 ÷ 当期純利益 × 100(%)\n稼いだ利益のうち、どれだけを株主に配当として還元しているかを示す指標。",
       managementView:"株主還元方針を示す指標。内部留保(将来投資への再投資)と株主還元のバランスを決める、資本政策上の重要な意思決定事項。"},
-    {category:"株主還元指標", term:"配当利回り", officialName:"Dividend Yield", formula:"一株当たり配当金 ÷ 株価 × 100(%)",
-      meaning:"現在の株価に対して、配当としてどれだけのリターンが得られるかを示す指標。",
+    {category:"株主還元指標", term:"Dividend Yield", meaningJa:"配当利回り", englishName:"",
+      explanation:"計算式: 一株当たり配当金 ÷ 株価 × 100(%)\n現在の株価に対して、配当としてどれだけのリターンが得られるかを示す指標。",
       managementView:"インカムゲイン重視の投資家からの評価に影響。株価が下落すると配当利回りは自動的に上昇するため、配当の持続可能性(配当性向やFCF)と合わせて評価する必要がある。"},
 
-    {category:"基礎用語(類義語の使い分け)", term:"Revenue, Sales", officialName:"", formula:"",
-      meaning:"収益(Revenue)、売上(Sales)。収益とは会社に入ってくるすべてのものを指す。その大部分は売上(Sales)だが、厳密には受取利息(Interest income)、受取配当金(Dividend income)など、売上とはならない収益も含まれる。",
+    {category:"基礎用語(類義語の使い分け)", term:"Revenue, Sales", meaningJa:"収益・売上", englishName:"",
+      explanation:"収益(Revenue)、売上(Sales)。収益とは会社に入ってくるすべてのものを指す。その大部分は売上(Sales)だが、厳密には受取利息(Interest income)、受取配当金(Dividend income)など、売上とはならない収益も含まれる。",
       managementView:""},
-    {category:"基礎用語(類義語の使い分け)", term:"Profit, Income, Margin, Earnings, Return", officialName:"", formula:"",
-      meaning:"利益。Profitは、「利益」の中で、もっともギスギスした響きを持つ言葉で、ズバリ「儲け」という日本語がピッタリくる単語。Incomeは「所得」という日本語がしっくりくるような、ニュートラルな言葉。ProfitとIncomeは、PL上でも、おおむね同じような頻度で現れ、PL上で最初の利益となる売上総利益は、Gross income、Gross profitどちらも同じ意味でOK。Marginは、元々は「余白」という意味があり、利益として取れる余白の部分で、Incomeに比べると少しギスギスした印象を与える。Earningsは「Earn=(ある対価として)獲得する」ことに重点を置くため、ギスギスした響きはない。Earningsがもっともよく使われるのは、EPS(Earnings Per Share、1株当たり純利益)を語るときで、Earningsはいつも複数形で使われる。Returnは、ROA(Return on Assets、総資産利益率)、ROE(Return on Equity、株主資本利益率)、ROIC(Return on Invested Capital、投下資本利益率)などの利益率を表現する際に、もっともひんぱんに使われる「利益」。",
+    {category:"基礎用語(類義語の使い分け)", term:"Profit, Income, Margin, Earnings, Return", meaningJa:"利益", englishName:"",
+      explanation:"利益。Profitは、「利益」の中で、もっともギスギスした響きを持つ言葉で、ズバリ「儲け」という日本語がピッタリくる単語。Incomeは「所得」という日本語がしっくりくるような、ニュートラルな言葉。ProfitとIncomeは、PL上でも、おおむね同じような頻度で現れ、PL上で最初の利益となる売上総利益は、Gross income、Gross profitどちらも同じ意味でOK。Marginは、元々は「余白」という意味があり、利益として取れる余白の部分で、Incomeに比べると少しギスギスした印象を与える。Earningsは「Earn=(ある対価として)獲得する」ことに重点を置くため、ギスギスした響きはない。Earningsがもっともよく使われるのは、EPS(Earnings Per Share、1株当たり純利益)を語るときで、Earningsはいつも複数形で使われる。Returnは、ROA(Return on Assets、総資産利益率)、ROE(Return on Equity、株主資本利益率)、ROIC(Return on Invested Capital、投下資本利益率)などの利益率を表現する際に、もっともひんぱんに使われる「利益」。",
       managementView:""},
-    {category:"基礎用語(類義語の使い分け)", term:"Cost, Expense", officialName:"", formula:"",
-      meaning:"コスト・原価(Cost)、経費・費用(Expense)。Costは、物やサービスを取得するために支払う金額や、製造にかかる費用を指す。固定資産の購入やプロジェクトの製造原価など、一度に計上される支出が典型例。Expenseは、事業運営や販売活動に関連して消費された支出。損益計算書上では、売上原価以外の販売費や一般管理費として計上され、期間ごとに費用として認識される。",
+    {category:"基礎用語(類義語の使い分け)", term:"Cost, Expense", meaningJa:"コスト・費用", englishName:"",
+      explanation:"コスト・原価(Cost)、経費・費用(Expense)。Costは、物やサービスを取得するために支払う金額や、製造にかかる費用を指す。固定資産の購入やプロジェクトの製造原価など、一度に計上される支出が典型例。Expenseは、事業運営や販売活動に関連して消費された支出。損益計算書上では、売上原価以外の販売費や一般管理費として計上され、期間ごとに費用として認識される。",
       managementView:""},
-    {category:"基礎用語(類義語の使い分け)", term:"Assets, Equity", officialName:"", formula:"",
-      meaning:"資産(Assets)、資本(Equity)。AssetsはBSの左側、EquityはBSの右下。紛らわしいのは、Invested Capitalを「投下資本」と訳すように、CapitalとEquityが同じ「資本」と翻訳されてしまうこと。Capitalは調達した資金を意味するが、Equityの他にも有利子負債を含んでいる。",
+    {category:"基礎用語(類義語の使い分け)", term:"Assets, Equity", meaningJa:"資産・資本", englishName:"",
+      explanation:"資産(Assets)、資本(Equity)。AssetsはBSの左側、EquityはBSの右下。紛らわしいのは、Invested Capitalを「投下資本」と訳すように、CapitalとEquityが同じ「資本」と翻訳されてしまうこと。Capitalは調達した資金を意味するが、Equityの他にも有利子負債を含んでいる。",
       managementView:""}
   ];
 
@@ -835,11 +835,7 @@
       var btn = document.createElement("button");
       btn.type = "button";
       btn.className = "choice-btn";
-      var html = "";
-      if(choiceTerm.officialName) html += '<div class="choice-official">' + escapeHtml(choiceTerm.officialName) + '</div>';
-      if(choiceTerm.formula) html += '<div class="choice-formula">計算式: ' + escapeHtml(choiceTerm.formula) + '</div>';
-      html += '<div class="choice-meaning">' + escapeHtml(choiceTerm.meaning) + '</div>';
-      btn.innerHTML = html;
+      btn.innerHTML = '<div class="choice-meaning">' + escapeHtml(choiceTerm.meaningJa) + '</div>';
       btn.addEventListener("click", function(){ handleAnswer(choiceTerm, t, btn); });
       wrap.appendChild(btn);
     });
@@ -872,9 +868,14 @@
     });
 
     var fb = document.getElementById("q-feedback");
+    var detailHtml = '<div class="mgmt-note">' +
+      (correctTerm.englishName ? '<div><b>何の略称か:</b> ' + escapeHtml(correctTerm.englishName) + '</div>' : "") +
+      (correctTerm.explanation ? '<div style="margin-top:6px; white-space:pre-wrap;"><b>解説:</b> ' + escapeHtml(correctTerm.explanation) + '</div>' : "") +
+      (correctTerm.managementView ? '<div style="margin-top:6px;"><b>経営側の視点:</b> ' + escapeHtml(correctTerm.managementView) + '</div>' : "") +
+      '</div>';
     fb.innerHTML = '<div class="feedback ' + (isCorrect?"ok":"ng") + '">' +
       (isCorrect ? "正解です。" : "不正解です。正しい意味は緑色で表示されています。") + '</div>' +
-      (correctTerm.managementView ? '<div class="mgmt-note"><b>経営側の視点:</b> ' + escapeHtml(correctTerm.managementView) + '</div>' : "");
+      detailHtml;
 
     var nextBtn = document.getElementById("next-btn");
     nextBtn.hidden = false;
@@ -948,9 +949,10 @@
         html += '<div class="term-card">' +
           '<div class="info">' +
             '<div class="t-name">' + escapeHtml(t.term) + '</div>' +
-            (t.officialName ? '<div class="t-official">' + escapeHtml(t.officialName) + '</div>' : "") +
-            (t.formula ? '<div class="t-official" style="font-family:Courier New, monospace;">計算式: ' + escapeHtml(t.formula) + '</div>' : "") +
-            '<div class="t-meaning">' + escapeHtml(t.meaning) + '</div>' +
+            '<div class="t-meaning" style="font-weight:600;">' + escapeHtml(t.meaningJa) + '</div>' +
+            (t.englishName ? '<div class="t-official">何の略称か: ' + escapeHtml(t.englishName) + '</div>' : "") +
+            (t.explanation ? '<div class="t-meaning" style="white-space:pre-wrap;">解説: ' + escapeHtml(t.explanation) + '</div>' : "") +
+            (t.managementView ? '<div class="t-meaning">経営側の視点: ' + escapeHtml(t.managementView) + '</div>' : "") +
             '<div class="t-stats">' + (rate===null ? "出題実績なし" : ("正答率 " + rate + "%(" + t.stats.correct + "/" + acc + ")")) + '</div>' +
           '</div>' +
           '<div class="actions">' +
@@ -978,9 +980,9 @@
     document.getElementById("dialog-title").textContent = t ? "用語を編集" : "用語を追加";
     document.getElementById("f-category").value = t ? t.category : "";
     document.getElementById("f-term").value = t ? t.term : "";
-    document.getElementById("f-official").value = t ? t.officialName : "";
-    document.getElementById("f-formula").value = t ? t.formula : "";
-    document.getElementById("f-meaning").value = t ? t.meaning : "";
+    document.getElementById("f-meaningja").value = t ? t.meaningJa : "";
+    document.getElementById("f-english").value = t ? t.englishName : "";
+    document.getElementById("f-explanation").value = t ? t.explanation : "";
     document.getElementById("f-mgmt").value = t ? t.managementView : "";
     document.getElementById("dialog-delete-btn").style.display = t ? "inline-block" : "none";
     dialog.showModal();
@@ -994,12 +996,12 @@
     var data = {
       category: document.getElementById("f-category").value.trim(),
       term: document.getElementById("f-term").value.trim(),
-      officialName: document.getElementById("f-official").value.trim(),
-      formula: document.getElementById("f-formula").value.trim(),
-      meaning: document.getElementById("f-meaning").value.trim(),
+      meaningJa: document.getElementById("f-meaningja").value.trim(),
+      englishName: document.getElementById("f-english").value.trim(),
+      explanation: document.getElementById("f-explanation").value.trim(),
       managementView: document.getElementById("f-mgmt").value.trim()
     };
-    if(!data.category || !data.term || !data.meaning) return;
+    if(!data.category || !data.term || !data.meaningJa || !data.explanation) return;
 
     var saveBtn = document.getElementById("term-save-btn");
     var errEl = document.getElementById("form-error");
@@ -1065,21 +1067,13 @@
     var lines = ["# コーポレートファイナンス主要指標 用語集", "", "クイズアプリから書き出したデータです。", ""];
     cats.forEach(function(cat){
       var list = terms.filter(function(t){ return t.category === cat; });
-      var hasFormula = list.some(function(t){ return t.officialName || t.formula; });
       lines.push("## " + cat, "");
-      if(hasFormula){
-        lines.push("| 用語(略称) | 正式名称(英語) | 計算式 | 意味(初心者向けの要旨) | 経営側の立場からの捉え方 |");
-        lines.push("|---|---|---|---|---|");
-        list.forEach(function(t){
-          lines.push("| " + t.term + " | " + t.officialName + " | " + t.formula + " | " + t.meaning + " | " + t.managementView + " |");
-        });
-      } else {
-        lines.push("| 用語グループ | 意味・使い分けのニュアンス |");
-        lines.push("|---|---|");
-        list.forEach(function(t){
-          lines.push("| " + t.term + " | " + t.meaning + " |");
-        });
-      }
+      lines.push("| 用語(略称) | 意味(日本語) | 何の略称か | 解説(計算式を含む) | 経営側の視点 |");
+      lines.push("|---|---|---|---|---|");
+      list.forEach(function(t){
+        var explanationOneLine = (t.explanation || "").replace(/\n/g, "<br>");
+        lines.push("| " + t.term + " | " + t.meaningJa + " | " + t.englishName + " | " + explanationOneLine + " | " + t.managementView + " |");
+      });
       lines.push("");
     });
     return lines.join("\n");
