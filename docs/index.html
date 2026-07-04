@@ -478,6 +478,12 @@
             <label for="f-mgmt">経営側の視点(任意)</label>
             <textarea id="f-mgmt" rows="3"></textarea>
           </div>
+          <div class="field">
+            <label for="f-image">添付画像(任意・解説の参考図など)</label>
+            <input type="file" id="f-image" accept="image/*">
+            <img id="image-preview" style="display:none; max-width:100%; margin-top:8px; border-radius:8px; border:1px solid var(--border);">
+            <button type="button" class="icon-btn del" id="remove-image-btn" style="display:none; margin-top:8px;">画像を削除</button>
+          </div>
           <div id="form-error" class="login-error"></div>
           <div class="btn-row">
             <button type="submit" class="btn" id="term-save-btn">保存</button>
@@ -871,6 +877,7 @@
     var detailHtml = '<div class="mgmt-note">' +
       (correctTerm.englishName ? '<div><b>何の略称か:</b> ' + escapeHtml(correctTerm.englishName) + '</div>' : "") +
       (correctTerm.explanation ? '<div style="margin-top:6px; white-space:pre-wrap;"><b>解説:</b> ' + escapeHtml(correctTerm.explanation) + '</div>' : "") +
+      (correctTerm.imageData ? '<div style="margin-top:6px;"><img src="' + correctTerm.imageData + '" style="max-width:100%; border-radius:8px;"></div>' : "") +
       (correctTerm.managementView ? '<div style="margin-top:6px;"><b>経営側の視点:</b> ' + escapeHtml(correctTerm.managementView) + '</div>' : "") +
       '</div>';
     fb.innerHTML = '<div class="feedback ' + (isCorrect?"ok":"ng") + '">' +
@@ -927,6 +934,50 @@
   var dialog = document.getElementById("term-dialog");
   var form = document.getElementById("term-form");
   var editingId = null;
+  var pendingImageData = "";
+
+  function resizeAndCompressImage(file, callback){
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var img = new Image();
+      img.onload = function(){
+        var maxDim = 900;
+        var w = img.width, h = img.height;
+        if(w > maxDim || h > maxDim){
+          if(w > h){ h = Math.round(h * maxDim / w); w = maxDim; }
+          else { w = Math.round(w * maxDim / h); h = maxDim; }
+        }
+        var canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        callback(canvas.toDataURL("image/jpeg", 0.7));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  document.getElementById("f-image").addEventListener("change", function(e){
+    var file = e.target.files[0];
+    if(!file) return;
+    resizeAndCompressImage(file, function(dataUrl){
+      pendingImageData = dataUrl;
+      var preview = document.getElementById("image-preview");
+      preview.src = dataUrl;
+      preview.style.display = "block";
+      document.getElementById("remove-image-btn").style.display = "inline-block";
+    });
+  });
+
+  document.getElementById("remove-image-btn").addEventListener("click", function(){
+    pendingImageData = "";
+    document.getElementById("f-image").value = "";
+    var preview = document.getElementById("image-preview");
+    preview.src = "";
+    preview.style.display = "none";
+    document.getElementById("remove-image-btn").style.display = "none";
+  });
 
   function renderManageList(){
     document.getElementById("manage-count").textContent = terms.length + " 件の用語が登録されています。";
@@ -953,6 +1004,7 @@
             (t.englishName ? '<div class="t-official">何の略称か: ' + escapeHtml(t.englishName) + '</div>' : "") +
             (t.explanation ? '<div class="t-meaning" style="white-space:pre-wrap;">解説: ' + escapeHtml(t.explanation) + '</div>' : "") +
             (t.managementView ? '<div class="t-meaning">経営側の視点: ' + escapeHtml(t.managementView) + '</div>' : "") +
+            (t.imageData ? '<div style="margin-top:6px;"><img src="' + t.imageData + '" style="max-width:160px; max-height:120px; border-radius:6px; border:1px solid var(--border);"></div>' : "") +
             '<div class="t-stats">' + (rate===null ? "出題実績なし" : ("正答率 " + rate + "%(" + t.stats.correct + "/" + acc + ")")) + '</div>' +
           '</div>' +
           '<div class="actions">' +
@@ -985,6 +1037,21 @@
     document.getElementById("f-explanation").value = t ? t.explanation : "";
     document.getElementById("f-mgmt").value = t ? t.managementView : "";
     document.getElementById("dialog-delete-btn").style.display = t ? "inline-block" : "none";
+
+    pendingImageData = (t && t.imageData) ? t.imageData : "";
+    document.getElementById("f-image").value = "";
+    var preview = document.getElementById("image-preview");
+    var removeBtn = document.getElementById("remove-image-btn");
+    if(pendingImageData){
+      preview.src = pendingImageData;
+      preview.style.display = "block";
+      removeBtn.style.display = "inline-block";
+    } else {
+      preview.src = "";
+      preview.style.display = "none";
+      removeBtn.style.display = "none";
+    }
+
     dialog.showModal();
   }
 
@@ -999,7 +1066,8 @@
       meaningJa: document.getElementById("f-meaningja").value.trim(),
       englishName: document.getElementById("f-english").value.trim(),
       explanation: document.getElementById("f-explanation").value.trim(),
-      managementView: document.getElementById("f-mgmt").value.trim()
+      managementView: document.getElementById("f-mgmt").value.trim(),
+      imageData: pendingImageData
     };
     if(!data.category || !data.term || !data.meaningJa || !data.explanation) return;
 
