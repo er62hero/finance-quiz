@@ -1,0 +1,1173 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ファイナンス用語クイズ</title>
+<style>
+  :root{
+    --bg:#f4f6fb;
+    --card:#ffffff;
+    --text:#1f2937;
+    --muted:#6b7280;
+    --border:#e2e6ee;
+    --primary:#2f5fb3;
+    --primary-dark:#234a8f;
+    --correct:#1f9d55;
+    --correct-bg:#e8f8ee;
+    --wrong:#d64545;
+    --wrong-bg:#fdecec;
+    --badge-bg:#eef2fb;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,system-ui,-apple-system,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.6;
+  }
+  .container{
+    max-width:760px;
+    margin:0 auto;
+    padding:24px 16px 64px;
+  }
+  header h1{
+    font-size:1.5rem;
+    margin:0 0 4px;
+  }
+  header p.sub{
+    margin:0 0 20px;
+    color:var(--muted);
+    font-size:0.9rem;
+  }
+  .tabs{
+    display:flex;
+    gap:8px;
+    margin-bottom:20px;
+    border-bottom:1px solid var(--border);
+  }
+  .tab-btn{
+    background:none;
+    border:none;
+    padding:10px 18px;
+    font-size:0.95rem;
+    cursor:pointer;
+    color:var(--muted);
+    border-bottom:2px solid transparent;
+    font-weight:600;
+  }
+  .tab-btn.active{
+    color:var(--primary);
+    border-bottom-color:var(--primary);
+  }
+  .view[hidden]{display:none;}
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:20px;
+    margin-bottom:16px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.03);
+  }
+  label{
+    display:block;
+    font-size:0.85rem;
+    font-weight:600;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
+  select, input[type=text], input[type=email], input[type=password], input[type=number], textarea{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    font-size:0.95rem;
+    font-family:inherit;
+    background:#fff;
+    color:var(--text);
+  }
+  textarea{resize:vertical;}
+  .field{margin-bottom:14px;}
+  .field-row{display:flex; gap:12px;}
+  .field-row .field{flex:1;}
+  button{
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .btn{
+    background:var(--primary);
+    color:#fff;
+    border:none;
+    padding:11px 20px;
+    border-radius:8px;
+    font-size:0.95rem;
+    font-weight:600;
+  }
+  .btn:hover{background:var(--primary-dark);}
+  .btn.secondary{
+    background:#fff;
+    color:var(--primary);
+    border:1px solid var(--primary);
+  }
+  .btn.secondary:hover{background:var(--badge-bg);}
+  .btn.danger{
+    background:#fff;
+    color:var(--wrong);
+    border:1px solid var(--wrong);
+  }
+  .btn.danger:hover{background:var(--wrong-bg);}
+  .btn:disabled{opacity:0.5; cursor:not-allowed;}
+  .btn-row{display:flex; gap:10px; flex-wrap:wrap;}
+  .badge{
+    display:inline-block;
+    background:var(--badge-bg);
+    color:var(--primary);
+    font-size:0.75rem;
+    font-weight:700;
+    padding:3px 10px;
+    border-radius:999px;
+  }
+  /* Login / loading */
+  #login-screen, #loading-screen{
+    max-width:380px;
+    margin:80px auto 0;
+  }
+  #loading-screen{
+    text-align:center;
+    color:var(--muted);
+  }
+  .login-error{
+    color:var(--wrong);
+    font-size:0.85rem;
+    margin-bottom:10px;
+    min-height:1.2em;
+  }
+  .user-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+  }
+  .user-bar .who{
+    text-align:right;
+    flex-shrink:0;
+  }
+  .user-bar .who .email{
+    font-size:0.8rem;
+    color:var(--muted);
+    margin-bottom:6px;
+    word-break:break-all;
+  }
+  /* Quiz setup */
+  .checkbox-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .checkbox-chip{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    border:1px solid var(--border);
+    padding:6px 12px;
+    border-radius:999px;
+    font-size:0.85rem;
+    cursor:pointer;
+    user-select:none;
+  }
+  .checkbox-chip input{margin:0;}
+  .toggle-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin:16px 0;
+    font-size:0.9rem;
+  }
+  .term-count-note{
+    color:var(--muted);
+    font-size:0.85rem;
+    margin-top:4px;
+  }
+  /* Question */
+  .progress{
+    color:var(--muted);
+    font-size:0.85rem;
+    margin-bottom:8px;
+  }
+  .question-term{
+    font-size:1.6rem;
+    font-weight:800;
+    margin:6px 0 16px;
+    color:var(--primary-dark);
+  }
+  .choice-btn{
+    display:block;
+    width:100%;
+    text-align:left;
+    background:#fff;
+    border:1.5px solid var(--border);
+    border-radius:10px;
+    padding:12px 14px;
+    margin-bottom:10px;
+    font-size:0.9rem;
+  }
+  .choice-btn:hover:not(:disabled){
+    border-color:var(--primary);
+  }
+  .choice-btn:disabled{cursor:default;}
+  .choice-official{font-weight:700; margin-bottom:2px;}
+  .choice-formula{
+    font-family:"Courier New",monospace;
+    font-size:0.82rem;
+    color:var(--muted);
+    margin-bottom:4px;
+  }
+  .choice-meaning{font-size:0.88rem;}
+  .choice-btn.correct{
+    border-color:var(--correct);
+    background:var(--correct-bg);
+  }
+  .choice-btn.wrong{
+    border-color:var(--wrong);
+    background:var(--wrong-bg);
+  }
+  .feedback{
+    margin-top:10px;
+    padding:12px 14px;
+    border-radius:10px;
+    font-size:0.88rem;
+  }
+  .feedback.ok{background:var(--correct-bg); color:#166534;}
+  .feedback.ng{background:var(--wrong-bg); color:#991b1b;}
+  .mgmt-note{
+    margin-top:10px;
+    padding:12px 14px;
+    border-radius:10px;
+    background:#f7f8fb;
+    border:1px solid var(--border);
+    font-size:0.85rem;
+    color:var(--muted);
+  }
+  .mgmt-note b{color:var(--text);}
+  /* Result */
+  .score-big{
+    font-size:2.2rem;
+    font-weight:800;
+    color:var(--primary-dark);
+  }
+  .review-item{
+    border-bottom:1px solid var(--border);
+    padding:10px 0;
+    font-size:0.85rem;
+  }
+  .review-item:last-child{border-bottom:none;}
+  .review-item .rt{font-weight:700;}
+  .review-item .ok-mark{color:var(--correct); font-weight:700;}
+  .review-item .ng-mark{color:var(--wrong); font-weight:700;}
+  /* Manage view */
+  .manage-toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:16px;
+  }
+  .category-group h3{
+    font-size:1rem;
+    color:var(--primary-dark);
+    border-left:4px solid var(--primary);
+    padding-left:8px;
+    margin:24px 0 10px;
+  }
+  .term-card{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    align-items:flex-start;
+    padding:12px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .term-card:last-child{border-bottom:none;}
+  .term-card .info{flex:1; min-width:0;}
+  .term-card .t-name{font-weight:700; font-size:1rem;}
+  .term-card .t-official{color:var(--muted); font-size:0.82rem; margin-top:2px;}
+  .term-card .t-meaning{font-size:0.85rem; margin-top:4px; color:var(--text);}
+  .term-card .t-stats{font-size:0.75rem; color:var(--muted); margin-top:4px;}
+  .term-card .actions{display:flex; gap:6px; flex-shrink:0;}
+  .icon-btn{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:6px 10px;
+    font-size:0.8rem;
+    color:var(--text);
+  }
+  .icon-btn:hover{border-color:var(--primary); color:var(--primary);}
+  .icon-btn.del:hover{border-color:var(--wrong); color:var(--wrong);}
+  dialog{
+    border:none;
+    border-radius:14px;
+    padding:0;
+    width:min(560px, 92vw);
+    box-shadow:0 10px 40px rgba(0,0,0,0.2);
+  }
+  dialog::backdrop{background:rgba(15,23,42,0.45);}
+  .dialog-inner{padding:22px;}
+  .dialog-inner h2{margin-top:0; font-size:1.15rem;}
+  .empty-note{
+    color:var(--muted);
+    font-size:0.9rem;
+    text-align:center;
+    padding:30px 0;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div id="fatal-error" style="display:none; background:#fdecec; color:#991b1b; padding:14px; border-radius:8px; margin-bottom:16px; font-size:0.85rem; white-space:pre-wrap;"></div>
+  <script>
+    window.addEventListener('error', function(e){
+      var el = document.getElementById('fatal-error');
+      el.style.display = 'block';
+      el.textContent += 'エラー: ' + (e.message || e.error) + '\n';
+    });
+    window.addEventListener('unhandledrejection', function(e){
+      var el = document.getElementById('fatal-error');
+      el.style.display = 'block';
+      el.textContent += '未処理のPromiseエラー: ' + (e.reason && e.reason.message ? e.reason.message : e.reason) + '\n';
+    });
+  </script>
+
+  <!-- LOGIN -->
+  <div id="login-screen" class="card" hidden>
+    <h1 style="font-size:1.3rem; margin-top:0;">ファイナンス用語クイズ</h1>
+    <p class="sub">ログインしてください。</p>
+    <form id="login-form">
+      <div class="field">
+        <label for="login-email">メールアドレス</label>
+        <input type="email" id="login-email" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="login-password">パスワード</label>
+        <input type="password" id="login-password" autocomplete="current-password" required>
+      </div>
+      <div class="login-error" id="login-error"></div>
+      <button type="submit" class="btn" id="login-submit-btn" style="width:100%;">ログイン</button>
+    </form>
+  </div>
+
+  <!-- LOADING -->
+  <div id="loading-screen" class="card" hidden>読み込み中...</div>
+
+  <!-- APP -->
+  <div id="app-shell" hidden>
+
+    <header>
+      <div class="user-bar">
+        <div>
+          <h1>ファイナンス用語クイズ</h1>
+          <p class="sub">finance_terms.md をもとにした学習用クイズアプリ。データはクラウドに保存され、全端末で同期されます。</p>
+        </div>
+        <div class="who">
+          <div class="email" id="user-email"></div>
+          <button class="icon-btn" id="logout-btn">ログアウト</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="quiz">クイズ</button>
+      <button class="tab-btn" data-tab="manage">用語管理</button>
+    </div>
+
+    <!-- QUIZ VIEW -->
+    <section id="view-quiz" class="view">
+
+      <div id="quiz-setup" class="card">
+        <div class="field">
+          <label>出題するカテゴリー</label>
+          <div id="category-checks" class="checkbox-list"></div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="q-count">出題数</label>
+            <select id="q-count">
+              <option value="5">5問</option>
+              <option value="10" selected>10問</option>
+              <option value="20">20問</option>
+              <option value="all">すべて</option>
+            </select>
+          </div>
+        </div>
+        <label class="toggle-row">
+          <input type="checkbox" id="q-weighted">
+          苦手な用語(誤答が多い用語)を優先的に出題する
+        </label>
+        <div id="quiz-count-note" class="term-count-note"></div>
+        <div class="btn-row" style="margin-top:16px;">
+          <button class="btn" id="start-quiz-btn">クイズを開始</button>
+        </div>
+      </div>
+
+      <div id="quiz-question" class="card" hidden>
+        <div class="progress" id="q-progress"></div>
+        <span class="badge" id="q-category"></span>
+        <div class="question-term" id="q-term"></div>
+        <div id="q-choices"></div>
+        <div id="q-feedback"></div>
+        <div class="btn-row" style="margin-top:14px;">
+          <button class="btn" id="next-btn" hidden>次の問題へ</button>
+        </div>
+      </div>
+
+      <div id="quiz-result" class="card" hidden>
+        <h2>結果</h2>
+        <div class="score-big" id="result-score"></div>
+        <div id="result-review" style="margin-top:16px;"></div>
+        <div class="btn-row" style="margin-top:18px;">
+          <button class="btn" id="retry-btn">同じ条件でもう一度</button>
+          <button class="btn secondary" id="back-setup-btn">設定に戻る</button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- MANAGE VIEW -->
+    <section id="view-manage" class="view" hidden>
+      <div class="manage-toolbar">
+        <div id="manage-count" style="color:var(--muted); font-size:0.9rem;"></div>
+        <div class="btn-row">
+          <button class="btn" id="add-term-btn">＋ 新規用語を追加</button>
+          <button class="btn secondary" id="export-md-btn">Markdownで書き出す</button>
+          <button class="btn danger" id="reset-data-btn">初期データに戻す</button>
+        </div>
+      </div>
+      <div id="term-list-wrap"></div>
+    </section>
+
+    <!-- Form dialog -->
+    <dialog id="term-dialog">
+      <div class="dialog-inner">
+        <h2 id="dialog-title">用語を追加</h2>
+        <form id="term-form">
+          <div class="field">
+            <label for="f-category">カテゴリー</label>
+            <input type="text" id="f-category" list="category-list" required>
+            <datalist id="category-list"></datalist>
+          </div>
+          <div class="field">
+            <label for="f-term">用語(略称 / 用語グループ) *</label>
+            <input type="text" id="f-term" required>
+          </div>
+          <div class="field">
+            <label for="f-meaningja">意味(日本語) * (クイズの選択肢に表示されます)</label>
+            <input type="text" id="f-meaningja" required>
+          </div>
+          <div class="field">
+            <label for="f-english">何の略称か(英語・任意)</label>
+            <input type="text" id="f-english">
+          </div>
+          <div class="field">
+            <label for="f-explanation">解説(計算式を含む) *</label>
+            <textarea id="f-explanation" rows="5" required></textarea>
+          </div>
+          <div class="field">
+            <label for="f-mgmt">経営側の視点(任意)</label>
+            <textarea id="f-mgmt" rows="3"></textarea>
+          </div>
+          <div class="field">
+            <label for="f-image">添付画像(任意・複数可・解説の参考図など)</label>
+            <input type="file" id="f-image" accept="image/*" multiple>
+            <div id="image-preview-list" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:8px;"></div>
+          </div>
+          <div id="form-error" class="login-error"></div>
+          <div class="btn-row">
+            <button type="submit" class="btn" id="term-save-btn">保存</button>
+            <button type="button" class="btn secondary" id="dialog-cancel-btn">キャンセル</button>
+            <button type="button" class="btn danger" id="dialog-delete-btn" style="margin-left:auto; display:none;">この用語を削除</button>
+          </div>
+        </form>
+      </div>
+    </dialog>
+
+  </div>
+
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+  import {
+    getAuth, setPersistence, browserLocalPersistence,
+    signInWithEmailAndPassword, onAuthStateChanged, signOut
+  } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+  import {
+    getFirestore, collection, doc, addDoc, updateDoc, deleteDoc,
+    onSnapshot, writeBatch, increment
+  } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+  var firebaseConfig = {
+    apiKey: "AIzaSyCEvUIK5_YQNt1RySfza3KTSnZD_H3TN2w",
+    authDomain: "financequiz-57a93.firebaseapp.com",
+    projectId: "financequiz-57a93",
+    storageBucket: "financequiz-57a93.firebasestorage.app",
+    messagingSenderId: "195230427277",
+    appId: "1:195230427277:web:5e54c9d9608956f4ccdac4"
+  };
+
+  var app = initializeApp(firebaseConfig);
+  var auth = getAuth(app);
+  var db = getFirestore(app);
+
+  var DEFAULT_TERMS = [
+    {category:"収益性・資本効率指標", term:"ROE", meaningJa:"自己資本利益率", englishName:"Return On Equity",
+      explanation:"計算式: 当期純利益 ÷ 自己資本 × 100(%)\n株主が出したお金(自己資本)を使って、会社がどれだけ効率的に利益を生み出したかを示す指標。数値が高いほど株主のお金を上手に増やせている。",
+      managementView:"株主還元・資本効率を代表する指標で、投資家が最も重視する数値の一つ。利益率・資産回転率・財務レバレッジの3要素に分解できる(デュポン分析)。借入を増やすと見かけ上ROEは上がるが、財務リスクとのバランスが問われる。"},
+    {category:"収益性・資本効率指標", term:"ROA", meaningJa:"総資産利益率", englishName:"Return On Assets",
+      explanation:"計算式: 当期純利益 ÷ 総資産 × 100(%)\n会社が持つ全ての資産(借入金も含めた元手全体)を使って、どれだけ利益を生み出したかを示す指標。負債の影響を受けにくい。",
+      managementView:"事業そのものの効率性を測る指標。ROEが高くてもROAが低い場合、借入(レバレッジ)で見かけ上のROEを底上げしている可能性があり、事業の実力を見るには両方を確認する必要がある。"},
+    {category:"収益性・資本効率指標", term:"ROIC", meaningJa:"投下資本利益率", englishName:"Return On Invested Capital",
+      explanation:"計算式: NOPAT(税引後営業利益) ÷ 投下資本(有利子負債+自己資本) × 100(%)\n事業に投じた資金(借入と株主資本の合計)全体に対して、本業でどれだけ効率的に利益を生み出したかを示す指標。",
+      managementView:"WACC(資本コスト)と比較することで価値創造の有無を判断する経営上最重要の指標の一つ。ROIC>WACCなら企業価値創造、ROIC<WACCなら価値破壊とされ、事業ポートフォリオの取捨選択にも用いられる。"},
+    {category:"収益性・資本効率指標", term:"ROI", meaningJa:"投資収益率", englishName:"Return On Investment",
+      explanation:"計算式: 投資から得られた利益 ÷ 投資額 × 100(%)\nある特定の投資(設備投資、広告費、M&Aなど)に対してどれだけのリターンが得られたかを測る指標。個別プロジェクトの費用対効果を測る。",
+      managementView:"全社的なROEと異なり、個別の投資案件・施策の意思決定や優先順位付けに使う実務的な指標。事業部やプロジェクト単位の予算配分の判断材料になる。"},
+    {category:"収益性・資本効率指標", term:"ROS", meaningJa:"売上高営業利益率", englishName:"Return On Sales / Operating Margin",
+      explanation:"計算式: 営業利益 ÷ 売上高 × 100(%)\n売上のうち、本業でどれだけ利益として残せているかを示す、最も基本的な収益性指標。",
+      managementView:"コスト構造・価格競争力・事業効率を評価する基本指標。業界内比較やセグメント別・事業別の収益性分析に日常的に用いられる。"},
+
+    {category:"株価バリュエーション指標", term:"PER", meaningJa:"株価収益率", englishName:"Price Earnings Ratio",
+      explanation:"計算式: 株価 ÷ 一株当たり利益(EPS)\n株価が利益の何年分で取引されているかを示す指標。将来の成長期待が高い会社ほどPERは高くなりやすい。",
+      managementView:"市場からの成長期待・評価を反映する指標。PERが高い企業は増資や株式を対価とするM&Aがしやすくなるため、IRを通じて適正な評価を得ることが経営課題となる。"},
+    {category:"株価バリュエーション指標", term:"PBR", meaningJa:"株価純資産倍率", englishName:"Price Book-value Ratio",
+      explanation:"計算式: 株価 ÷ 一株当たり純資産(BPS)\n株価が会社の解散価値(純資産)の何倍で取引されているかを示す指標。PBR1倍は株価と純資産が同水準であることを意味する。",
+      managementView:"PBRが1倍割れの状態は、市場が「資産を事業に使うより解散・分配した方が価値がある」と評価していることを意味し、東証も改善を要請している。ROE向上や自社株買いなど資本政策の効果を測る指標として経営者が重視する。"},
+    {category:"株価バリュエーション指標", term:"EV", meaningJa:"企業価値", englishName:"Enterprise Value",
+      explanation:"計算式: 時価総額 + 有利子負債 − 現金及び現金同等物\n株主だけでなく債権者も含めた会社全体の価値。M&Aで会社を買収する際に実質的に必要となる金額に近い。",
+      managementView:"買収防衛やM&A戦略において自社の適正価値を把握するために重要。時価総額だけでなく負債・手元資金の状況も踏まえた評価が必要になる。"},
+    {category:"株価バリュエーション指標", term:"EV/EBITDA", meaningJa:"EV/EBITDA倍率", englishName:"EV/EBITDA Ratio",
+      explanation:"計算式: EV(企業価値) ÷ EBITDA\n会社の実質的な稼ぐ力(EBITDA)に対して、企業価値が何倍で評価されているかを示す指標。PERと似ているが資本構成の影響を受けにくい。",
+      managementView:"M&Aの妥当性評価や同業他社比較で頻繁に使われる。業界平均より倍率が低い場合、買収されるリスクや株価の割安感を示唆する。"},
+
+    {category:"1株当たり指標", term:"EPS", meaningJa:"一株当たり利益", englishName:"Earnings Per Share",
+      explanation:"計算式: 当期純利益 ÷ 発行済株式数\n株式1株あたりにどれだけの利益が生まれたかを示す指標。",
+      managementView:"自社株買いで発行株式数を減らすとEPSが向上するため、代表的な株主還元策として使われる。役員報酬やストックオプションの評価指標としても用いられる。"},
+    {category:"1株当たり指標", term:"BPS", meaningJa:"一株当たり純資産", englishName:"Book-value Per Share",
+      explanation:"計算式: 純資産 ÷ 発行済株式数\n株式1株あたりの会社の純資産(解散価値)を示す指標。",
+      managementView:"PBR算出の基礎となる。BPSの着実な増加は内部留保の蓄積を意味するが、それだけでは株主価値向上とは限らず、資本の使い道(投資・還元)とのバランスが問われる。"},
+
+    {category:"キャッシュフロー・資本コスト指標", term:"EBITDA", meaningJa:"利払い前・税引き前・減価償却前利益", englishName:"Earnings Before Interest, Taxes, Depreciation and Amortization",
+      explanation:"計算式: 営業利益 + 減価償却費(+のれん償却費)\n金利・税金・減価償却費などを考慮する前の利益で、会社が生み出す現金創出力に近い指標。国や会計方針の違いの影響を受けにくい。",
+      managementView:"設備投資が重い企業(通信・インフラなど)の実質的な収益力を測るのに有効。M&A時の企業価値評価(EV/EBITDA倍率)の基礎としても使われる。"},
+    {category:"キャッシュフロー・資本コスト指標", term:"NOPAT", meaningJa:"税引後営業利益", englishName:"Net Operating Profit After Tax",
+      explanation:"計算式: 営業利益 ×(1 − 実効税率)\n本業が生み出す利益から税金の影響を除いた、事業そのものの実力を示す利益。",
+      managementView:"ROIC算出の分子として使われ、資金調達方法(借入か自己資本か)に左右されない事業収益力を評価する際の土台となる。"},
+    {category:"キャッシュフロー・資本コスト指標", term:"FCF", meaningJa:"フリーキャッシュフロー", englishName:"Free Cash Flow",
+      explanation:"計算式: 営業活動によるキャッシュフロー − 投資活動によるキャッシュフロー\n本業で稼いだ現金から、事業継続に必要な投資を差し引いて、自由に使えるお金がどれだけ残ったかを示す指標。",
+      managementView:"配当・自社株買い・借入返済・M&Aなど経営判断の原資となる最重要キャッシュ指標。利益が黒字でもFCFがマイナス(黒字倒産のリスク)ということもあり、利益と併せて必ず確認される。"},
+    {category:"キャッシュフロー・資本コスト指標", term:"WACC", meaningJa:"加重平均資本コスト", englishName:"Weighted Average Cost of Capital",
+      explanation:"計算式: 株主資本コスト×(自己資本/総資本) + 負債コスト×(1−実効税率)×(負債/総資本)\n会社が事業資金を調達する際にかかる、株主と債権者への平均的なコスト(要求リターン)。",
+      managementView:"投資の可否を判断する基準線(ハードルレート)。ROICやIRRがWACCを上回るかどうかで、その投資が企業価値を創造するかを判断する経営意思決定の根幹となる。"},
+
+    {category:"財務健全性指標", term:"Equity Ratio", meaningJa:"自己資本比率", englishName:"",
+      explanation:"計算式: 自己資本 ÷ 総資産 × 100(%)\n会社の全財産のうち、返済不要の自己資本がどれだけの割合を占めるかを示す、財務の安全性を測る代表的指標。",
+      managementView:"高すぎると資本効率(ROE)を下げる可能性があり、低すぎると財務リスク(倒産リスク)が高まる。業種特性や成長ステージに応じた最適水準を経営判断で見極める必要がある。"},
+    {category:"財務健全性指標", term:"Current Ratio", meaningJa:"流動比率", englishName:"",
+      explanation:"計算式: 流動資産 ÷ 流動負債 × 100(%)\n短期的な支払い能力(1年以内に返済すべき負債に対する、現金化しやすい資産の割合)を示す指標。",
+      managementView:"短期の資金繰りリスクを判断する材料。一般的に200%以上が安全とされるが、業種により適正水準は異なるため業界平均との比較が重要。"},
+
+    {category:"株主還元指標", term:"Payout Ratio", meaningJa:"配当性向", englishName:"",
+      explanation:"計算式: 配当金総額 ÷ 当期純利益 × 100(%)\n稼いだ利益のうち、どれだけを株主に配当として還元しているかを示す指標。",
+      managementView:"株主還元方針を示す指標。内部留保(将来投資への再投資)と株主還元のバランスを決める、資本政策上の重要な意思決定事項。"},
+    {category:"株主還元指標", term:"Dividend Yield", meaningJa:"配当利回り", englishName:"",
+      explanation:"計算式: 一株当たり配当金 ÷ 株価 × 100(%)\n現在の株価に対して、配当としてどれだけのリターンが得られるかを示す指標。",
+      managementView:"インカムゲイン重視の投資家からの評価に影響。株価が下落すると配当利回りは自動的に上昇するため、配当の持続可能性(配当性向やFCF)と合わせて評価する必要がある。"},
+
+    {category:"基礎用語(類義語の使い分け)", term:"Revenue, Sales", meaningJa:"収益・売上", englishName:"",
+      explanation:"収益(Revenue)、売上(Sales)。収益とは会社に入ってくるすべてのものを指す。その大部分は売上(Sales)だが、厳密には受取利息(Interest income)、受取配当金(Dividend income)など、売上とはならない収益も含まれる。",
+      managementView:""},
+    {category:"基礎用語(類義語の使い分け)", term:"Profit, Income, Margin, Earnings, Return", meaningJa:"利益", englishName:"",
+      explanation:"利益。Profitは、「利益」の中で、もっともギスギスした響きを持つ言葉で、ズバリ「儲け」という日本語がピッタリくる単語。Incomeは「所得」という日本語がしっくりくるような、ニュートラルな言葉。ProfitとIncomeは、PL上でも、おおむね同じような頻度で現れ、PL上で最初の利益となる売上総利益は、Gross income、Gross profitどちらも同じ意味でOK。Marginは、元々は「余白」という意味があり、利益として取れる余白の部分で、Incomeに比べると少しギスギスした印象を与える。Earningsは「Earn=(ある対価として)獲得する」ことに重点を置くため、ギスギスした響きはない。Earningsがもっともよく使われるのは、EPS(Earnings Per Share、1株当たり純利益)を語るときで、Earningsはいつも複数形で使われる。Returnは、ROA(Return on Assets、総資産利益率)、ROE(Return on Equity、株主資本利益率)、ROIC(Return on Invested Capital、投下資本利益率)などの利益率を表現する際に、もっともひんぱんに使われる「利益」。",
+      managementView:""},
+    {category:"基礎用語(類義語の使い分け)", term:"Cost, Expense", meaningJa:"コスト・費用", englishName:"",
+      explanation:"コスト・原価(Cost)、経費・費用(Expense)。Costは、物やサービスを取得するために支払う金額や、製造にかかる費用を指す。固定資産の購入やプロジェクトの製造原価など、一度に計上される支出が典型例。Expenseは、事業運営や販売活動に関連して消費された支出。損益計算書上では、売上原価以外の販売費や一般管理費として計上され、期間ごとに費用として認識される。",
+      managementView:""},
+    {category:"基礎用語(類義語の使い分け)", term:"Assets, Equity", meaningJa:"資産・資本", englishName:"",
+      explanation:"資産(Assets)、資本(Equity)。AssetsはBSの左側、EquityはBSの右下。紛らわしいのは、Invested Capitalを「投下資本」と訳すように、CapitalとEquityが同じ「資本」と翻訳されてしまうこと。Capitalは調達した資金を意味するが、Equityの他にも有利子負債を含んでいる。",
+      managementView:""}
+  ];
+
+  function escapeHtml(str){
+    return String(str == null ? "" : str)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+
+  function shuffle(arr){
+    var a = arr.slice();
+    for(var i=a.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var tmp=a[i]; a[i]=a[j]; a[j]=tmp;
+    }
+    return a;
+  }
+
+  // ---------- state ----------
+  var terms = [];
+  var currentUid = null;
+  var termsUnsub = null;
+  var initialCheckDone = false;
+
+  function termsColRef(uid){
+    return collection(db, "users", uid, "terms");
+  }
+
+  function getCategories(){
+    var seen = [];
+    terms.forEach(function(t){
+      if(seen.indexOf(t.category) === -1) seen.push(t.category);
+    });
+    return seen;
+  }
+
+  // ---------- auth ----------
+  setPersistence(auth, browserLocalPersistence).catch(function(e){ console.error(e); });
+
+  onAuthStateChanged(auth, function(user){
+    if(user){
+      currentUid = user.uid;
+      document.getElementById("login-screen").hidden = true;
+      document.getElementById("app-shell").hidden = true;
+      document.getElementById("loading-screen").hidden = false;
+      document.getElementById("user-email").textContent = user.email;
+      subscribeTerms(user.uid);
+    } else {
+      currentUid = null;
+      if(termsUnsub){ termsUnsub(); termsUnsub = null; }
+      terms = [];
+      document.getElementById("loading-screen").hidden = true;
+      document.getElementById("app-shell").hidden = true;
+      document.getElementById("login-screen").hidden = false;
+    }
+  });
+
+  document.getElementById("login-form").addEventListener("submit", function(e){
+    e.preventDefault();
+    var email = document.getElementById("login-email").value.trim();
+    var password = document.getElementById("login-password").value;
+    var errEl = document.getElementById("login-error");
+    errEl.textContent = "";
+    var btn = document.getElementById("login-submit-btn");
+    btn.disabled = true;
+    signInWithEmailAndPassword(auth, email, password)
+      .catch(function(){
+        errEl.textContent = "ログインに失敗しました。メールアドレスまたはパスワードをご確認ください。";
+      })
+      .finally(function(){ btn.disabled = false; });
+  });
+
+  document.getElementById("logout-btn").addEventListener("click", function(){
+    signOut(auth);
+  });
+
+  // ---------- firestore sync ----------
+  function subscribeTerms(uid){
+    initialCheckDone = false;
+    termsUnsub = onSnapshot(termsColRef(uid), function(snapshot){
+      terms = snapshot.docs.map(function(d){
+        var data = d.data();
+        if(!data.stats) data.stats = {correct:0, wrong:0};
+        if(!Array.isArray(data.imageDataList) || data.imageDataList.length === 0){
+          data.imageDataList = data.imageData ? [data.imageData] : [];
+        }
+        data.id = d.id;
+        return data;
+      });
+      if(!initialCheckDone){
+        initialCheckDone = true;
+        if(terms.length === 0){
+          seedDefaultTerms(uid);
+          return;
+        }
+      }
+      onTermsChanged();
+    }, function(err){
+      console.error(err);
+      document.getElementById("loading-screen").textContent = "データの読み込みに失敗しました: " + err.message;
+    });
+  }
+
+  function seedDefaultTerms(uid){
+    var batch = writeBatch(db);
+    var col = termsColRef(uid);
+    DEFAULT_TERMS.forEach(function(t){
+      var ref = doc(col);
+      batch.set(ref, Object.assign({stats:{correct:0, wrong:0}}, t));
+    });
+    batch.commit().catch(function(e){ console.error(e); });
+  }
+
+  function onTermsChanged(){
+    document.getElementById("loading-screen").hidden = true;
+    document.getElementById("app-shell").hidden = false;
+    var quizSetupVisible = !document.getElementById("quiz-setup").hidden;
+    var manageVisible = !document.getElementById("view-manage").hidden;
+    if(quizSetupVisible) renderQuizSetup();
+    if(manageVisible) renderManageList();
+  }
+
+  // ---------- tabs ----------
+  var tabButtons = document.querySelectorAll(".tab-btn");
+  var views = {
+    quiz: document.getElementById("view-quiz"),
+    manage: document.getElementById("view-manage")
+  };
+  tabButtons.forEach(function(btn){
+    btn.addEventListener("click", function(){
+      tabButtons.forEach(function(b){ b.classList.remove("active"); });
+      btn.classList.add("active");
+      Object.keys(views).forEach(function(k){ views[k].hidden = true; });
+      views[btn.dataset.tab].hidden = false;
+      if(btn.dataset.tab === "manage") renderManageList();
+      if(btn.dataset.tab === "quiz") renderQuizSetup();
+    });
+  });
+
+  // ================= QUIZ =================
+  var quiz = {
+    queue: [],
+    index: 0,
+    score: 0,
+    answers: [],
+    choices: [],
+    answered: false
+  };
+
+  var categoryChecksEl = document.getElementById("category-checks");
+  var quizCountNoteEl = document.getElementById("quiz-count-note");
+
+  function renderQuizSetup(){
+    var cats = getCategories();
+    categoryChecksEl.innerHTML = "";
+    cats.forEach(function(cat){
+      var label = document.createElement("label");
+      label.className = "checkbox-chip";
+      var count = terms.filter(function(t){return t.category===cat;}).length;
+      label.innerHTML = '<input type="checkbox" value="' + escapeHtml(cat) + '" checked> ' +
+        escapeHtml(cat) + ' (' + count + ')';
+      categoryChecksEl.appendChild(label);
+    });
+    categoryChecksEl.querySelectorAll("input").forEach(function(cb){
+      cb.addEventListener("change", updateQuizCountNote);
+    });
+    updateQuizCountNote();
+  }
+
+  function selectedCategories(){
+    return Array.from(categoryChecksEl.querySelectorAll("input:checked")).map(function(cb){return cb.value;});
+  }
+
+  function updateQuizCountNote(){
+    var pool = terms.filter(function(t){ return selectedCategories().indexOf(t.category) !== -1; });
+    if(pool.length < 4){
+      quizCountNoteEl.textContent = "出題には4つ以上の用語が必要です(現在 " + pool.length + " 件選択中)。用語管理タブから追加してください。";
+      document.getElementById("start-quiz-btn").disabled = true;
+    } else {
+      quizCountNoteEl.textContent = "選択中のカテゴリーから " + pool.length + " 件の用語が出題対象です。";
+      document.getElementById("start-quiz-btn").disabled = false;
+    }
+  }
+
+  function pickQuestionTerms(pool, count, weighted){
+    if(!weighted) return shuffle(pool).slice(0, count);
+    var arr = pool.map(function(t){
+      var w = 1 + (t.stats.wrong * 2) - (t.stats.correct * 0.3);
+      return {t:t, w: Math.max(w, 0.2)};
+    });
+    var result = [];
+    for(var k=0; k<count && arr.length>0; k++){
+      var total = arr.reduce(function(s,i){return s+i.w;}, 0);
+      var r = Math.random() * total;
+      var acc = 0, idx = 0;
+      for(; idx<arr.length; idx++){
+        acc += arr[idx].w;
+        if(r <= acc) break;
+      }
+      if(idx >= arr.length) idx = arr.length - 1;
+      result.push(arr[idx].t);
+      arr.splice(idx, 1);
+    }
+    return result;
+  }
+
+  function pickDistractors(correctTerm, n){
+    var sameCat = terms.filter(function(t){ return t.id !== correctTerm.id && t.category === correctTerm.category; });
+    var others = terms.filter(function(t){ return t.id !== correctTerm.id && t.category !== correctTerm.category; });
+    var pool = shuffle(sameCat).concat(shuffle(others));
+    return pool.slice(0, n);
+  }
+
+  document.getElementById("start-quiz-btn").addEventListener("click", function(){
+    var pool = terms.filter(function(t){ return selectedCategories().indexOf(t.category) !== -1; });
+    if(pool.length < 4) return;
+    var countSel = document.getElementById("q-count").value;
+    var count = countSel === "all" ? pool.length : Math.min(parseInt(countSel,10), pool.length);
+    var weighted = document.getElementById("q-weighted").checked;
+
+    quiz.queue = pickQuestionTerms(pool, count, weighted);
+    quiz.index = 0;
+    quiz.score = 0;
+    quiz.answers = [];
+
+    document.getElementById("quiz-setup").hidden = true;
+    document.getElementById("quiz-result").hidden = true;
+    document.getElementById("quiz-question").hidden = false;
+    renderQuestion();
+  });
+
+  function renderQuestion(){
+    quiz.answered = false;
+    var t = quiz.queue[quiz.index];
+    document.getElementById("q-progress").textContent = "第 " + (quiz.index+1) + " 問 / " + quiz.queue.length + " 問";
+    document.getElementById("q-category").textContent = t.category;
+    document.getElementById("q-term").textContent = t.term;
+
+    var distractors = pickDistractors(t, 3);
+    quiz.choices = shuffle([t].concat(distractors));
+
+    var wrap = document.getElementById("q-choices");
+    wrap.innerHTML = "";
+    quiz.choices.forEach(function(choiceTerm){
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "choice-btn";
+      btn.innerHTML = '<div class="choice-meaning">' + escapeHtml(choiceTerm.meaningJa) + '</div>';
+      btn.addEventListener("click", function(){ handleAnswer(choiceTerm, t, btn); });
+      wrap.appendChild(btn);
+    });
+
+    document.getElementById("q-feedback").innerHTML = "";
+    document.getElementById("next-btn").hidden = true;
+  }
+
+  function handleAnswer(chosen, correctTerm, chosenBtn){
+    if(quiz.answered) return;
+    quiz.answered = true;
+    var isCorrect = chosen.id === correctTerm.id;
+
+    if(isCorrect){ quiz.score++; }
+
+    var statsField = isCorrect ? "stats.correct" : "stats.wrong";
+    var updatePayload = {};
+    updatePayload[statsField] = increment(1);
+    updateDoc(doc(db, "users", currentUid, "terms", correctTerm.id), updatePayload)
+      .catch(function(e){ console.error(e); });
+
+    quiz.answers.push({term: correctTerm.term, category: correctTerm.category, correct: isCorrect, meaning: correctTerm.meaning});
+
+    var wrap = document.getElementById("q-choices");
+    Array.from(wrap.children).forEach(function(btn, i){
+      btn.disabled = true;
+      var ct = quiz.choices[i];
+      if(ct.id === correctTerm.id) btn.classList.add("correct");
+      else if(ct.id === chosen.id) btn.classList.add("wrong");
+    });
+
+    var fb = document.getElementById("q-feedback");
+    var detailHtml = '<div class="mgmt-note">' +
+      (correctTerm.englishName ? '<div><b>何の略称か:</b> ' + escapeHtml(correctTerm.englishName) + '</div>' : "") +
+      (correctTerm.explanation ? '<div style="margin-top:6px; white-space:pre-wrap;"><b>解説:</b> ' + escapeHtml(correctTerm.explanation) + '</div>' : "") +
+      (correctTerm.imageDataList && correctTerm.imageDataList.length ? '<div style="margin-top:6px; display:flex; flex-wrap:wrap; gap:8px;">' +
+        correctTerm.imageDataList.map(function(src){ return '<img src="' + src + '" style="max-width:100%; max-height:320px; border-radius:8px;">'; }).join("") +
+        '</div>' : "") +
+      (correctTerm.managementView ? '<div style="margin-top:6px;"><b>経営側の視点:</b> ' + escapeHtml(correctTerm.managementView) + '</div>' : "") +
+      '</div>';
+    fb.innerHTML = '<div class="feedback ' + (isCorrect?"ok":"ng") + '">' +
+      (isCorrect ? "正解です。" : "不正解です。正しい意味は緑色で表示されています。") + '</div>' +
+      detailHtml;
+
+    var nextBtn = document.getElementById("next-btn");
+    nextBtn.hidden = false;
+    nextBtn.textContent = (quiz.index === quiz.queue.length - 1) ? "結果を見る" : "次の問題へ";
+  }
+
+  document.getElementById("next-btn").addEventListener("click", function(){
+    quiz.index++;
+    if(quiz.index >= quiz.queue.length){
+      showResult();
+    } else {
+      renderQuestion();
+    }
+  });
+
+  function showResult(){
+    document.getElementById("quiz-question").hidden = true;
+    document.getElementById("quiz-result").hidden = false;
+    document.getElementById("result-score").textContent = quiz.score + " / " + quiz.queue.length + " 問正解";
+
+    var reviewEl = document.getElementById("result-review");
+    var wrongOnes = quiz.answers.filter(function(a){ return !a.correct; });
+    if(wrongOnes.length === 0){
+      reviewEl.innerHTML = '<p style="color:var(--correct); font-weight:600;">全問正解です。お見事です。</p>';
+    } else {
+      var html = '<h3 style="font-size:0.95rem;">復習(間違えた用語)</h3>';
+      wrongOnes.forEach(function(a){
+        html += '<div class="review-item"><span class="ng-mark">✕</span> <span class="rt">' + escapeHtml(a.term) + '</span>' +
+          '<span class="badge" style="margin-left:6px;">' + escapeHtml(a.category) + '</span>' +
+          '<div style="margin-top:4px;">' + escapeHtml(a.meaning) + '</div></div>';
+      });
+      reviewEl.innerHTML = html;
+    }
+  }
+
+  document.getElementById("retry-btn").addEventListener("click", function(){
+    document.getElementById("start-quiz-btn").click();
+  });
+
+  document.getElementById("back-setup-btn").addEventListener("click", function(){
+    document.getElementById("quiz-result").hidden = true;
+    document.getElementById("quiz-question").hidden = true;
+    document.getElementById("quiz-setup").hidden = false;
+    renderQuizSetup();
+  });
+
+  // ================= MANAGE =================
+  var termListWrap = document.getElementById("term-list-wrap");
+  var dialog = document.getElementById("term-dialog");
+  var form = document.getElementById("term-form");
+  var editingId = null;
+  var pendingImageList = [];
+
+  function resizeAndCompressImage(file, callback){
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var img = new Image();
+      img.onload = function(){
+        var maxDim = 900;
+        var w = img.width, h = img.height;
+        if(w > maxDim || h > maxDim){
+          if(w > h){ h = Math.round(h * maxDim / w); w = maxDim; }
+          else { w = Math.round(w * maxDim / h); h = maxDim; }
+        }
+        var canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        callback(canvas.toDataURL("image/jpeg", 0.7));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function estimateBase64Bytes(dataUrl){
+    var idx = dataUrl.indexOf(",");
+    var b64 = idx >= 0 ? dataUrl.slice(idx + 1) : dataUrl;
+    return Math.floor(b64.length * 0.75);
+  }
+
+  function renderImagePreviewList(){
+    var wrap = document.getElementById("image-preview-list");
+    wrap.innerHTML = "";
+    pendingImageList.forEach(function(dataUrl, idx){
+      var item = document.createElement("div");
+      item.style.position = "relative";
+      item.innerHTML = '<img src="' + dataUrl + '" style="max-width:130px; max-height:110px; border-radius:6px; border:1px solid var(--border); display:block;">' +
+        '<button type="button" class="icon-btn del" data-idx="' + idx + '" style="position:absolute; top:2px; right:2px; padding:1px 7px; line-height:1.4;">×</button>';
+      wrap.appendChild(item);
+    });
+    wrap.querySelectorAll("button[data-idx]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        pendingImageList.splice(parseInt(btn.dataset.idx, 10), 1);
+        renderImagePreviewList();
+      });
+    });
+  }
+
+  document.getElementById("f-image").addEventListener("change", function(e){
+    var files = Array.from(e.target.files || []);
+    files.forEach(function(file){
+      resizeAndCompressImage(file, function(dataUrl){
+        pendingImageList.push(dataUrl);
+        renderImagePreviewList();
+      });
+    });
+    e.target.value = "";
+  });
+
+  function renderManageList(){
+    document.getElementById("manage-count").textContent = terms.length + " 件の用語が登録されています。";
+    var catList = document.getElementById("category-list");
+    catList.innerHTML = getCategories().map(function(c){ return '<option value="' + escapeHtml(c) + '">'; }).join("");
+
+    if(terms.length === 0){
+      termListWrap.innerHTML = '<p class="empty-note">用語が登録されていません。「＋ 新規用語を追加」から登録してください。</p>';
+      return;
+    }
+
+    var cats = getCategories();
+    var html = "";
+    cats.forEach(function(cat){
+      var list = terms.filter(function(t){ return t.category === cat; });
+      html += '<div class="category-group"><h3>' + escapeHtml(cat) + '</h3>';
+      list.forEach(function(t){
+        var acc = t.stats.correct + t.stats.wrong;
+        var rate = acc ? Math.round((t.stats.correct/acc)*100) : null;
+        html += '<div class="term-card">' +
+          '<div class="info">' +
+            '<div class="t-name">' + escapeHtml(t.term) + '</div>' +
+            '<div class="t-meaning" style="font-weight:600;">' + escapeHtml(t.meaningJa) + '</div>' +
+            (t.englishName ? '<div class="t-official">何の略称か: ' + escapeHtml(t.englishName) + '</div>' : "") +
+            (t.explanation ? '<div class="t-meaning" style="white-space:pre-wrap;">解説: ' + escapeHtml(t.explanation) + '</div>' : "") +
+            (t.managementView ? '<div class="t-meaning">経営側の視点: ' + escapeHtml(t.managementView) + '</div>' : "") +
+            (t.imageDataList && t.imageDataList.length ? '<div style="margin-top:6px; display:flex; flex-wrap:wrap; gap:6px;">' +
+              t.imageDataList.map(function(src){ return '<img src="' + src + '" style="max-width:120px; max-height:90px; border-radius:6px; border:1px solid var(--border);">'; }).join("") +
+              '</div>' : "") +
+            '<div class="t-stats">' + (rate===null ? "出題実績なし" : ("正答率 " + rate + "%(" + t.stats.correct + "/" + acc + ")")) + '</div>' +
+          '</div>' +
+          '<div class="actions">' +
+            '<button class="icon-btn edit" data-id="' + t.id + '">編集</button>' +
+            '<button class="icon-btn del" data-id="' + t.id + '">削除</button>' +
+          '</div>' +
+        '</div>';
+      });
+      html += '</div>';
+    });
+    termListWrap.innerHTML = html;
+
+    termListWrap.querySelectorAll(".icon-btn.edit").forEach(function(btn){
+      btn.addEventListener("click", function(){ openDialog(btn.dataset.id); });
+    });
+    termListWrap.querySelectorAll(".icon-btn.del").forEach(function(btn){
+      btn.addEventListener("click", function(){ deleteTerm(btn.dataset.id); });
+    });
+  }
+
+  function openDialog(id){
+    editingId = id || null;
+    var t = editingId ? terms.find(function(x){ return x.id === editingId; }) : null;
+    document.getElementById("form-error").textContent = "";
+    document.getElementById("dialog-title").textContent = t ? "用語を編集" : "用語を追加";
+    document.getElementById("f-category").value = t ? t.category : "";
+    document.getElementById("f-term").value = t ? t.term : "";
+    document.getElementById("f-meaningja").value = t ? t.meaningJa : "";
+    document.getElementById("f-english").value = t ? t.englishName : "";
+    document.getElementById("f-explanation").value = t ? t.explanation : "";
+    document.getElementById("f-mgmt").value = t ? t.managementView : "";
+    document.getElementById("dialog-delete-btn").style.display = t ? "inline-block" : "none";
+
+    if(t && Array.isArray(t.imageDataList) && t.imageDataList.length){
+      pendingImageList = t.imageDataList.slice();
+    } else if(t && t.imageData){
+      pendingImageList = [t.imageData];
+    } else {
+      pendingImageList = [];
+    }
+    document.getElementById("f-image").value = "";
+    renderImagePreviewList();
+
+    dialog.showModal();
+  }
+
+  document.getElementById("add-term-btn").addEventListener("click", function(){ openDialog(null); });
+  document.getElementById("dialog-cancel-btn").addEventListener("click", function(){ dialog.close(); });
+
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    var data = {
+      category: document.getElementById("f-category").value.trim(),
+      term: document.getElementById("f-term").value.trim(),
+      meaningJa: document.getElementById("f-meaningja").value.trim(),
+      englishName: document.getElementById("f-english").value.trim(),
+      explanation: document.getElementById("f-explanation").value.trim(),
+      managementView: document.getElementById("f-mgmt").value.trim(),
+      imageDataList: pendingImageList
+    };
+    if(!data.category || !data.term || !data.meaningJa || !data.explanation) return;
+
+    var saveBtn = document.getElementById("term-save-btn");
+    var errEl = document.getElementById("form-error");
+
+    var totalImageBytes = pendingImageList.reduce(function(s, d){ return s + estimateBase64Bytes(d); }, 0);
+    if(totalImageBytes > 900000){
+      errEl.textContent = "添付画像の合計サイズが大きすぎます(上限約900KB)。枚数を減らすか画像を差し替えてください。";
+      return;
+    }
+    saveBtn.disabled = true;
+    errEl.textContent = "";
+
+    var p;
+    if(editingId){
+      p = updateDoc(doc(db, "users", currentUid, "terms", editingId), data);
+    } else {
+      data.stats = {correct:0, wrong:0};
+      p = addDoc(termsColRef(currentUid), data);
+    }
+    p.then(function(){
+      dialog.close();
+    }).catch(function(err){
+      errEl.textContent = "保存に失敗しました: " + err.message;
+    }).finally(function(){
+      saveBtn.disabled = false;
+    });
+  });
+
+  document.getElementById("dialog-delete-btn").addEventListener("click", function(){
+    if(!editingId) return;
+    if(!confirm("この用語を削除しますか？")) return;
+    deleteDoc(doc(db, "users", currentUid, "terms", editingId))
+      .catch(function(e){ alert("削除に失敗しました: " + e.message); });
+    dialog.close();
+  });
+
+  function deleteTerm(id){
+    if(!confirm("この用語を削除しますか？")) return;
+    deleteDoc(doc(db, "users", currentUid, "terms", id))
+      .catch(function(e){ alert("削除に失敗しました: " + e.message); });
+  }
+
+  document.getElementById("reset-data-btn").addEventListener("click", function(){
+    if(!confirm("追加・編集した内容をすべて破棄して、初期データに戻します。よろしいですか？")) return;
+    var batch = writeBatch(db);
+    terms.forEach(function(t){
+      batch.delete(doc(db, "users", currentUid, "terms", t.id));
+    });
+    batch.commit()
+      .then(function(){ seedDefaultTerms(currentUid); })
+      .catch(function(e){ alert("リセットに失敗しました: " + e.message); });
+  });
+
+  document.getElementById("export-md-btn").addEventListener("click", function(){
+    var md = buildMarkdown();
+    var blob = new Blob([md], {type:"text/markdown;charset=utf-8"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "finance_terms_export.md";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  function buildMarkdown(){
+    var cats = getCategories();
+    var lines = ["# コーポレートファイナンス主要指標 用語集", "", "クイズアプリから書き出したデータです。", ""];
+    cats.forEach(function(cat){
+      var list = terms.filter(function(t){ return t.category === cat; });
+      lines.push("## " + cat, "");
+      lines.push("| 用語(略称) | 意味(日本語) | 何の略称か | 解説(計算式を含む) | 経営側の視点 |");
+      lines.push("|---|---|---|---|---|");
+      list.forEach(function(t){
+        var explanationOneLine = (t.explanation || "").replace(/\n/g, "<br>");
+        lines.push("| " + t.term + " | " + t.meaningJa + " | " + t.englishName + " | " + explanationOneLine + " | " + t.managementView + " |");
+      });
+      lines.push("");
+    });
+    return lines.join("\n");
+  }
+</script>
+</body>
+</html>
