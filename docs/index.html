@@ -495,6 +495,10 @@
 
   </div>
 
+  <div id="image-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; align-items:center; justify-content:center; padding:24px; cursor:zoom-out;">
+    <img id="lightbox-img" style="max-width:95vw; max-height:95vh; border-radius:8px;">
+  </div>
+
 </div>
 
 <script type="module">
@@ -613,6 +617,14 @@
     }
     return a;
   }
+
+  function openLightbox(src){
+    document.getElementById("lightbox-img").src = src;
+    document.getElementById("image-lightbox").style.display = "flex";
+  }
+  document.getElementById("image-lightbox").addEventListener("click", function(){
+    this.style.display = "none";
+  });
 
   // ---------- state ----------
   var terms = [];
@@ -880,13 +892,16 @@
       (correctTerm.englishName ? '<div><b>何の略称か:</b> ' + escapeHtml(correctTerm.englishName) + '</div>' : "") +
       (correctTerm.explanation ? '<div style="margin-top:6px; white-space:pre-wrap;"><b>解説:</b> ' + escapeHtml(correctTerm.explanation) + '</div>' : "") +
       (correctTerm.imageDataList && correctTerm.imageDataList.length ? '<div style="margin-top:6px; display:flex; flex-wrap:wrap; gap:8px;">' +
-        correctTerm.imageDataList.map(function(src){ return '<img src="' + src + '" style="max-width:100%; max-height:320px; border-radius:8px;">'; }).join("") +
+        correctTerm.imageDataList.map(function(src){ return '<img src="' + src + '" class="lightbox-thumb" style="max-width:100%; max-height:320px; border-radius:8px; cursor:pointer;">'; }).join("") +
         '</div>' : "") +
-      (correctTerm.managementView ? '<div style="margin-top:6px;"><b>経営側の視点:</b> ' + escapeHtml(correctTerm.managementView) + '</div>' : "") +
+      (correctTerm.managementView ? '<div style="margin-top:6px; padding-top:6px; border-top:1px solid var(--border); white-space:pre-wrap;"><b>経営側の視点:</b> ' + escapeHtml(correctTerm.managementView) + '</div>' : "") +
       '</div>';
     fb.innerHTML = '<div class="feedback ' + (isCorrect?"ok":"ng") + '">' +
       (isCorrect ? "正解です。" : "不正解です。正しい意味は緑色で表示されています。") + '</div>' +
       detailHtml;
+    fb.querySelectorAll("img.lightbox-thumb").forEach(function(img){
+      img.addEventListener("click", function(){ openLightbox(img.src); });
+    });
 
     var nextBtn = document.getElementById("next-btn");
     nextBtn.hidden = false;
@@ -1021,9 +1036,9 @@
             '<div class="t-meaning" style="font-weight:600;">' + escapeHtml(t.meaningJa) + '</div>' +
             (t.englishName ? '<div class="t-official">何の略称か: ' + escapeHtml(t.englishName) + '</div>' : "") +
             (t.explanation ? '<div class="t-meaning" style="white-space:pre-wrap;">解説: ' + escapeHtml(t.explanation) + '</div>' : "") +
-            (t.managementView ? '<div class="t-meaning">経営側の視点: ' + escapeHtml(t.managementView) + '</div>' : "") +
+            (t.managementView ? '<div class="t-meaning" style="white-space:pre-wrap; margin-top:8px; padding-top:8px; border-top:1px solid var(--border);">経営側の視点: ' + escapeHtml(t.managementView) + '</div>' : "") +
             (t.imageDataList && t.imageDataList.length ? '<div style="margin-top:6px; display:flex; flex-wrap:wrap; gap:6px;">' +
-              t.imageDataList.map(function(src){ return '<img src="' + src + '" style="max-width:120px; max-height:90px; border-radius:6px; border:1px solid var(--border);">'; }).join("") +
+              t.imageDataList.map(function(src){ return '<img src="' + src + '" class="lightbox-thumb" style="max-width:120px; max-height:90px; border-radius:6px; border:1px solid var(--border); cursor:pointer;">'; }).join("") +
               '</div>' : "") +
             '<div class="t-stats">' + (rate===null ? "出題実績なし" : ("正答率 " + rate + "%(" + t.stats.correct + "/" + acc + ")")) + '</div>' +
           '</div>' +
@@ -1042,6 +1057,9 @@
     });
     termListWrap.querySelectorAll(".icon-btn.del").forEach(function(btn){
       btn.addEventListener("click", function(){ deleteTerm(btn.dataset.id); });
+    });
+    termListWrap.querySelectorAll("img.lightbox-thumb").forEach(function(img){
+      img.addEventListener("click", function(){ openLightbox(img.src); });
     });
   }
 
